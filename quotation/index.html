@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kathacharya — Quotations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   KATHACHARYA PRODUCTIONS — Quotation Builder
+   Design tokens
+   ============================================================ */
+:root{
+  /* App shell — cinematic dark */
+  --shell-bg:#0B0B0A;
+  --shell-bg2:#111110;
+  --shell-panel:#161513;
+  --shell-text:#ECE9E1;
+  --shell-mut:#8B887E;
+  --shell-faint:#54524A;
+  --shell-line:#26251F;
+  --shell-line2:#302E27;
+
+  /* Document — ink on paper (print-clean) */
+  --paper:#FFFFFF;
+  --doc-ink:#151310;
+  --doc-body:#2C2A25;
+  --doc-mut:#726F66;
+  --doc-faint:#9A968C;
+  --doc-line:#E5E2D9;
+  --doc-line-strong:#C9C5B9;
+  --doc-tint:#F6F4EE;
+  --doc-tint2:#F0EDE4;
+
+  /* Monochrome accent — white in the dark UI, ink inside the document */
+  --accent:#F4F2EC;
+  --accent-ink:#FFFFFF;
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--shell-bg);
+  color:var(--shell-text);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  font-feature-settings:"cv05","ss01";
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,[contenteditable]{font-family:inherit}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* eyebrow / tracked label */
+.eyebrow{
+  font-size:10.5px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;
+}
+
+/* ============================================================
+   VIEW SWITCHING
+   ============================================================ */
+.view{display:none}
+.view.active{display:block}
+#brief.active{animation:fadeIn .45s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#brief.active{animation:none}}
+
+/* ============================================================
+   1) SELECTOR SCREEN
+   ============================================================ */
+#selector{
+  min-height:100vh;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #17150F 0%, var(--shell-bg) 55%, #060605 100%);
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+}
+#selector::after{ /* subtle film grain vignette */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(140% 120% at 50% 40%, transparent 60%, rgba(0,0,0,.55) 100%);
+}
+.sel-inner{
+  width:100%;max-width:1120px;margin:0 auto;padding:46px 40px 64px;
+  position:relative;z-index:2;flex:1;display:flex;flex-direction:column;
+}
+.sel-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.wordmark{
+  font-size:15px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;
+}
+.wordmark .thin{font-weight:inherit;color:inherit}
+.sel-top .eyebrow{color:var(--shell-faint);padding-top:5px}
+
+.sel-hero{margin-top:auto;padding-top:72px}
+.sel-hero .kick{color:var(--accent);margin-bottom:22px}
+.sel-hero h1{
+  font-size:clamp(34px,6.4vw,74px);
+  line-height:.98;font-weight:700;letter-spacing:-.025em;
+  color:var(--shell-text);
+}
+.sel-hero h1 .l2{color:var(--shell-mut);font-weight:300}
+.sel-hero p{
+  margin-top:22px;max-width:460px;color:var(--shell-mut);
+  font-size:14.5px;line-height:1.6;font-weight:400;
+}
+
+/* the six numbered options */
+.type-list{
+  margin-top:52px;border-top:1px solid var(--shell-line);
+}
+.type-row{
+  display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:22px;
+  width:100%;text-align:left;padding:20px 8px 20px 4px;
+  border-bottom:1px solid var(--shell-line);
+  transition:padding-left .4s var(--ease), background .3s var(--ease);
+  position:relative;
+}
+.type-row::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--accent);transform:scaleY(0);transform-origin:top;
+  transition:transform .4s var(--ease);
+}
+.type-row:hover,.type-row:focus-visible{
+  background:linear-gradient(90deg,rgba(255,255,255,.06),transparent 60%);
+  padding-left:20px;outline:none;
+}
+.type-row:hover::before,.type-row:focus-visible::before{transform:scaleY(1)}
+.type-idx{
+  font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--shell-faint);
+  transition:color .3s var(--ease);
+}
+.type-row:hover .type-idx{color:var(--accent)}
+.type-name{font-size:clamp(20px,3vw,30px);font-weight:600;letter-spacing:-.01em;color:var(--shell-text)}
+.type-sub{display:block;font-size:12.5px;font-weight:400;color:var(--shell-mut);letter-spacing:0;margin-top:3px}
+.type-arrow{
+  font-size:20px;color:var(--shell-faint);
+  transform:translateX(-6px);opacity:0;transition:all .4s var(--ease);
+}
+.type-row:hover .type-arrow,.type-row:focus-visible .type-arrow{transform:translateX(0);opacity:1;color:var(--shell-text)}
+
+.sel-foot{
+  margin-top:38px;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  color:var(--shell-faint);font-size:11px;letter-spacing:.04em;flex-wrap:wrap;
+}
+.sel-foot a{color:var(--shell-mut);text-decoration:none}
+.sel-foot a:hover{color:var(--shell-text)}
+.saved-flag{color:var(--shell-faint)}
+
+/* ============================================================
+   1.5) BRIEF SCREEN
+   ============================================================ */
+#brief{
+  min-height:100vh;
+  background:radial-gradient(120% 80% at 50% -10%, #17150F 0%, var(--shell-bg) 55%, #060605 100%);
+  display:flex;flex-direction:column;position:relative;
+}
+.brief-screen{width:100%;max-width:760px;margin:0 auto;padding:40px 40px 64px;flex:1;display:flex;flex-direction:column}
+.brief-body-wrap{margin-top:auto;margin-bottom:auto;padding-top:40px}
+#brief .kick{color:var(--accent);margin-bottom:18px}
+#brief h1{font-size:clamp(30px,5.4vw,52px);line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--shell-text)}
+.brief-help{margin:20px 0 22px;color:var(--shell-mut);font-size:14.5px;line-height:1.65;max-width:600px}
+.brief-help b{color:var(--shell-text);font-weight:600}
+.brief-help em{color:var(--shell-text);font-style:normal;font-weight:500}
+.brief-help .hint{display:inline-block;margin-top:8px;font-size:13px;color:var(--shell-faint)}
+.brief-ta{
+  width:100%;min-height:150px;background:var(--shell-panel);border:1px solid var(--shell-line2);
+  border-radius:12px;color:var(--shell-text);font-size:14.5px;line-height:1.6;padding:16px 18px;
+  resize:vertical;outline:none;font-family:inherit;transition:border-color .2s;
+}
+.brief-ta:focus{border-color:#3f3d33}
+.brief-ta::placeholder{color:var(--shell-faint)}
+.brief-actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end}
+
+/* ============================================================
+   2) BUILDER SCREEN
+   ============================================================ */
+#builder{background:#100F0D;min-height:100vh}
+
+/* Toolbar (non-printing) */
+.toolbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(11,11,10,.86);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--shell-line);
+}
+.toolbar-in{
+  max-width:1000px;margin:0 auto;padding:12px 22px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.tb-back{
+  display:inline-flex;align-items:center;gap:9px;color:var(--shell-mut);
+  font-size:12.5px;font-weight:500;padding:8px 4px;transition:color .2s;
+}
+.tb-back:hover{color:var(--shell-text)}
+.tb-back .ar{font-size:15px}
+.tb-title{display:flex;flex-direction:column;line-height:1.2}
+.tb-title .k{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--shell-faint);font-weight:600}
+.tb-title .n{font-size:13.5px;font-weight:600;color:var(--shell-text)}
+.tb-spacer{flex:1}
+.tb-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:500;letter-spacing:.01em;
+  padding:9px 14px;border-radius:8px;
+  background:var(--shell-panel);border:1px solid var(--shell-line2);
+  color:var(--shell-text);transition:all .18s var(--ease);white-space:nowrap;
+}
+.btn:hover{background:#211F1B;border-color:#3a382f}
+.btn .ic{width:14px;height:14px;display:inline-block}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#111}
+.btn-primary:hover{background:#fff;border-color:#fff}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--shell-mut)}
+.btn-ghost:hover{background:var(--shell-panel);color:var(--shell-text)}
+
+.rate-note{
+  max-width:1000px;margin:0 auto;padding:10px 22px 0;
+  font-size:11.5px;color:var(--shell-faint);display:flex;gap:8px;align-items:center;
+}
+.rate-note b{color:var(--shell-mut);font-weight:600}
+
+/* ---------- The paper sheet ---------- */
+.sheet-wrap{padding:30px 20px 90px;display:flex;justify-content:center}
+.sheet{
+  width:100%;max-width:900px;background:var(--paper);color:var(--doc-body);
+  border-radius:4px;box-shadow:0 40px 90px -40px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.4);
+  padding:56px 60px 52px;position:relative;
+}
+
+/* Document header */
+.doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:30px}
+.doc-brand .mk{
+  font-size:16px;font-weight:800;letter-spacing:.26em;text-transform:uppercase;color:var(--doc-ink);
+}
+.doc-brand .mk .thin{font-weight:inherit;color:inherit}
+.doc-brand .tag{
+  margin-top:6px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--doc-faint);font-weight:500;
+}
+.doc-qt{text-align:right}
+.doc-qt .lbl{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--doc-faint);font-weight:600}
+.doc-qt .big{font-size:26px;font-weight:700;letter-spacing:-.01em;color:var(--doc-ink);margin-top:2px}
+
+/* header rule — single line */
+.filmstrip{
+  height:0;margin:20px 0 4px;border-top:2px solid var(--doc-ink);
+}
+
+.doc-type{
+  margin-top:22px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+}
+.doc-type h2{font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--doc-ink)}
+.doc-type .dash{color:var(--doc-line-strong)}
+.doc-type .sub{font-size:13px;color:var(--doc-mut);font-weight:400}
+
+/* Meta / client block */
+.meta{
+  margin-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:0 46px;
+  border-top:1px solid var(--doc-line);border-bottom:1px solid var(--doc-line);
+  padding:6px 0;
+}
+.meta-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed var(--doc-line)}
+.meta-col > .meta-row:last-child{border-bottom:none}
+.meta-lbl{
+  flex:0 0 118px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--doc-faint);font-weight:600;
+}
+.fld{
+  flex:1;font-size:13.5px;color:var(--doc-ink);font-weight:500;
+  border:none;background:transparent;outline:none;padding:2px 4px;border-radius:4px;
+  min-width:0;
+}
+.fld::placeholder{color:var(--doc-faint);font-weight:400}
+.fld:focus{background:var(--doc-tint)}
+.fld:hover:not(:focus){background:#faf9f5}
+
+/* Project brief (optional, prints only if filled) */
+.brief-block{margin-top:18px;border-left:2px solid var(--doc-line-strong);padding:1px 0 1px 14px}
+.brief-lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--doc-faint);font-weight:700;margin-bottom:4px}
+.brief-text{font-size:12.5px;line-height:1.55;color:var(--doc-body);outline:none;border-radius:4px;padding:2px 4px;min-height:1.2em}
+.brief-text:focus{background:var(--doc-tint)}
+.brief-block.empty .brief-lbl{opacity:.55}
+
+/* Line-item table */
+table.items{width:100%;border-collapse:collapse;margin-top:26px}
+table.items thead th{
+  font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-faint);
+  font-weight:700;text-align:left;padding:0 8px 9px;border-bottom:1.5px solid var(--doc-ink);
+}
+th.c-sn{width:34px;text-align:center}
+th.c-qty{width:64px;text-align:right}
+th.c-unit{width:82px}
+th.c-rate{width:96px;text-align:right}
+th.c-amt{width:104px;text-align:right}
+th.c-del{width:26px;padding-right:0}
+
+/* section header row */
+tr.sec-row td{
+  padding:16px 8px 7px;border-bottom:1px solid var(--doc-line);
+}
+tr.sec-row.first td{padding-top:10px}
+.sec-name{
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--doc-ink);
+  outline:none;border-radius:4px;padding:1px 4px;display:inline-block;min-width:80px;
+}
+.sec-name:focus{background:var(--doc-tint)}
+.sec-del{color:var(--doc-faint);font-size:11px;margin-left:8px;opacity:0;transition:opacity .15s}
+tr.sec-row:hover .sec-del{opacity:1}
+.sec-del:hover{color:var(--doc-ink)}
+
+/* item rows */
+tr.item-row{border-bottom:1px solid var(--doc-line)}
+tr.item-row:hover{background:#fbfaf6}
+tr.item-row td{padding:9px 8px;vertical-align:top}
+.td-sn{text-align:center;font-size:11px;color:var(--doc-faint);font-weight:600;padding-top:11px!important}
+.it-desc{
+  font-size:13px;font-weight:600;color:var(--doc-ink);outline:none;border-radius:4px;
+  padding:1px 4px;line-height:1.35;
+}
+.it-notes{
+  font-size:11.5px;font-weight:400;color:var(--doc-mut);outline:none;border-radius:4px;
+  padding:1px 4px;margin-top:2px;line-height:1.4;
+}
+.it-desc:focus,.it-notes:focus{background:var(--doc-tint)}
+[contenteditable]:empty:before{content:attr(data-ph);color:var(--doc-faint);font-weight:400}
+
+.cell-in{
+  width:100%;border:none;background:transparent;outline:none;
+  font-size:13px;color:var(--doc-ink);padding:3px 4px;border-radius:4px;font-weight:500;
+}
+.cell-in:focus{background:var(--doc-tint)}
+.cell-in:hover:not(:focus){background:#f8f7f2}
+.in-qty,.in-rate{text-align:right;font-variant-numeric:tabular-nums}
+.in-rate{font-weight:500}
+/* strip number spinners */
+.cell-in[type=number]::-webkit-outer-spin-button,
+.cell-in[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cell-in[type=number]{-moz-appearance:textfield}
+.td-amt{text-align:right;font-size:13px;font-weight:600;color:var(--doc-ink);font-variant-numeric:tabular-nums;padding-top:11px!important}
+.td-del{text-align:center;padding-top:10px!important}
+.row-del{color:var(--doc-faint);font-size:14px;line-height:1;opacity:0;transition:opacity .15s,color .15s;padding:2px}
+tr.item-row:hover .row-del{opacity:1}
+.row-del:hover{color:var(--doc-ink)}
+
+/* add-row control inside a section */
+tr.add-row td{padding:6px 8px 12px}
+.add-line{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--doc-faint);
+  font-weight:500;letter-spacing:.03em;padding:4px 6px;border-radius:5px;transition:all .15s;
+}
+.add-line:hover{color:var(--doc-ink);background:var(--doc-tint)}
+
+/* subtotal row */
+tr.sub-row td{
+  padding:8px 8px;background:var(--doc-tint);border-top:1px solid var(--doc-line);
+  border-bottom:1px solid var(--doc-line);
+}
+.sub-lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-mut);font-weight:600}
+.sub-amt{text-align:right;font-size:12.5px;font-weight:700;color:var(--doc-ink);font-variant-numeric:tabular-nums}
+/* breathing room after each section */
+tr.sec-gap td{height:22px;border:none;background:transparent;padding:0}
+
+/* add section */
+.add-section{
+  margin-top:14px;display:inline-flex;align-items:center;gap:7px;
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  color:var(--doc-faint);padding:8px 10px;border:1px dashed var(--doc-line-strong);border-radius:7px;
+  transition:all .18s;
+}
+.add-section:hover{color:var(--doc-ink);border-color:var(--doc-ink);background:var(--doc-tint)}
+
+/* Totals block */
+.totals{margin-top:30px;display:flex;justify-content:flex-end}
+.totals-inner{width:340px;max-width:100%}
+.tot-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--doc-line)}
+.tot-row .tl{font-size:12px;color:var(--doc-mut);font-weight:500;display:flex;align-items:center;gap:6px}
+.tot-row .tv{font-size:13px;font-weight:600;color:var(--doc-ink);font-variant-numeric:tabular-nums}
+.pct-in{
+  width:42px;border:none;border-bottom:1px solid var(--doc-line-strong);background:transparent;
+  font-size:11px;text-align:right;color:var(--doc-ink);font-weight:600;outline:none;padding:1px 2px;
+  font-variant-numeric:tabular-nums;
+}
+.pct-in:focus{border-color:var(--doc-ink)}
+.opt-del{color:var(--doc-faint);font-size:10px;margin-left:6px;opacity:0;transition:opacity .15s,color .15s;padding:1px 3px}
+.tot-row:hover .opt-del{opacity:1}
+.opt-del:hover{color:var(--doc-ink)}
+.tot-add{display:flex;gap:8px;padding:8px 0 2px}
+.add-opt{
+  font-size:10.5px;letter-spacing:.02em;color:var(--doc-faint);font-weight:500;
+  padding:4px 8px;border:1px dashed var(--doc-line-strong);border-radius:6px;transition:all .15s;
+}
+.add-opt:hover{color:var(--doc-ink);border-color:var(--doc-ink);background:var(--doc-tint)}
+.tot-grand{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:10px;padding:14px 0 4px;border-top:2px solid var(--doc-ink);
+}
+.tot-grand .tl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--doc-ink)}
+.tot-grand .tv{font-size:24px;font-weight:700;color:var(--doc-ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tot-grand .cur{font-size:12px;font-weight:600;color:var(--doc-mut);margin-right:5px;letter-spacing:.06em}
+.budget-chip{margin-top:9px;text-align:right;font-size:10.5px;letter-spacing:.03em;color:var(--doc-mut);font-weight:500}
+.budget-chip b{color:var(--doc-ink);font-weight:600}
+
+/* Terms + signatures */
+.terms{margin-top:38px;border-top:1px solid var(--doc-line);padding-top:20px}
+.terms h3{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--doc-faint);font-weight:700;margin-bottom:12px}
+.terms ul{list-style:none}
+.terms li{
+  position:relative;padding-left:18px;font-size:11.5px;line-height:1.6;color:var(--doc-body);
+  margin-bottom:6px;outline:none;border-radius:4px;
+}
+.terms li:focus{background:var(--doc-tint)}
+.terms li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;background:var(--doc-ink);border-radius:1px}
+.term-del{position:absolute;right:0;top:2px;color:var(--doc-faint);opacity:0;font-size:12px;cursor:pointer}
+.terms li:hover .term-del{opacity:1}
+.term-del:hover{color:var(--doc-ink)}
+.add-term{margin-top:6px;font-size:11px;color:var(--doc-faint);font-weight:500;padding:4px 6px;border-radius:5px;display:inline-flex;gap:6px;align-items:center}
+.add-term:hover{color:var(--doc-ink);background:var(--doc-tint)}
+
+.signs{margin-top:42px;display:grid;grid-template-columns:1fr 1fr;gap:44px}
+.sign .line{border-top:1.5px solid var(--doc-ink);padding-top:8px}
+.sign .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-mut);font-weight:600}
+.sign .sub{font-size:10.5px;color:var(--doc-faint);margin-top:2px}
+
+.doc-foot{
+  margin-top:40px;padding-top:16px;border-top:1px solid var(--doc-line);
+  display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--doc-faint);font-weight:500;flex-wrap:wrap;gap:10px;
+}
+
+/* ============================================================
+   MODAL (manage rates confirm etc.)
+   ============================================================ */
+.modal-back{
+  position:fixed;inset:0;z-index:200;background:rgba(6,6,5,.72);
+  backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px;
+}
+.modal-back.show{display:flex}
+.modal{
+  background:var(--shell-panel);border:1px solid var(--shell-line2);border-radius:14px;
+  max-width:420px;width:100%;padding:26px 26px 22px;color:var(--shell-text);
+}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--shell-mut);line-height:1.55;margin-bottom:20px}
+.modal .row{display:flex;gap:10px;justify-content:flex-end}
+
+/* toast */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--shell-panel);border:1px solid var(--shell-line2);color:var(--shell-text);
+  padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:300;
+  opacity:0;pointer-events:none;transition:all .3s var(--ease);
+  box-shadow:0 20px 40px -20px rgba(0,0,0,.8);display:flex;align-items:center;gap:9px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.toast.ok .dot{background:#4ea36b}
+
+/* file input hidden */
+#importFile{display:none}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:720px){
+  .sel-inner{padding:32px 22px 44px}
+  .brief-screen{padding:30px 22px 48px}
+  .sheet-wrap{padding:20px 12px 70px}
+  .sheet{padding:30px 20px 30px}
+  .meta{grid-template-columns:1fr;gap:0}
+  .doc-head{flex-direction:column;gap:14px}
+  .doc-qt{text-align:left}
+  th.c-unit{display:none}.item-row .td-unit{display:none}
+  .type-row{grid-template-columns:44px 1fr auto;gap:14px}
+  .signs{grid-template-columns:1fr;gap:26px}
+  .totals-inner{width:100%}
+}
+
+/* phones — keep the quotation readable without horizontal scrolling */
+@media (max-width:560px){
+  .toolbar-in{padding:10px 12px;gap:10px}
+  .tb-title{display:none}
+  .tb-actions{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;gap:7px;margin:0 -12px 0 0;padding:2px 12px 2px 0}
+  .tb-actions::-webkit-scrollbar{height:0}
+  .btn{flex:0 0 auto;padding:8px 11px;font-size:11px}
+  .sheet-wrap{padding:14px 8px 60px}
+  .sheet{padding:24px 14px 26px;border-radius:3px}
+  .doc-brand .mk{font-size:14px;letter-spacing:.2em}
+  .doc-qt .big{font-size:22px}
+  .doc-type{margin-top:16px;gap:8px}
+  .doc-type h2{font-size:17px}
+  .doc-type .sub{font-size:12px}
+
+  .items-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.items{table-layout:fixed;width:100%}
+  thead th{font-size:8px;letter-spacing:.05em;padding:0 3px 6px}
+  th.c-sn{width:18px}
+  th.c-qty{width:28px}
+  th.c-rate{width:56px}
+  th.c-amt{width:64px}
+  th.c-del{width:16px}
+  tr.item-row td{padding:8px 3px}
+  .td-sn{font-size:9px;padding-top:9px!important}
+  .it-desc{font-size:11.5px;line-height:1.3}
+  .it-notes{font-size:9.5px;line-height:1.3}
+  .cell-in{font-size:10.5px;padding:2px}
+  .td-amt{font-size:10.5px;padding-top:9px!important}
+  .row-del{font-size:12px}
+  tr.sec-row td{padding:14px 3px 6px}
+  .sec-name{font-size:10px;letter-spacing:.1em}
+  .sub-lbl{font-size:9px;letter-spacing:.08em}
+  .sub-amt{font-size:11px}
+  tr.sec-gap td{height:14px}
+  .add-line{font-size:10px}
+  .tot-grand .tv{font-size:20px}
+  .tot-row .tl,.tot-row .tv{font-size:11.5px}
+  .terms li{font-size:11px}
+  .brief-help{font-size:13.5px}
+  .brief-ta{min-height:130px;font-size:14px}
+}
+
+/* touch devices: reveal controls that normally show on hover */
+@media (hover:none){
+  .row-del,.sec-del,.term-del,.opt-del{opacity:1}
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print{
+  @page{size:A4;margin:14mm 13mm}
+  body{background:#fff}
+  .toolbar,.rate-note,.modal-back,.toast,.row-del,.sec-del,.term-del,.opt-del,.tot-add,.budget-chip,.brief-block.empty,
+  .add-line,.add-section,.add-term,.add-row,.tb-actions{display:none!important}
+  #selector,#brief{display:none!important}
+  .sheet-wrap{padding:0;display:block}
+  .sheet{box-shadow:none;border-radius:0;max-width:none;width:100%;padding:0}
+  .filmstrip{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tr.sub-row td,.terms li::before,.tot-grand,.filmstrip,
+  .type-row::before{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fld,.cell-in,.it-desc,.it-notes,.sec-name,.pct-in,.terms li{background:transparent!important}
+  tr.item-row,tr.sec-row,tr.sub-row{page-break-inside:avoid}
+  .totals,.terms,.signs{page-break-inside:avoid}
+  input,[contenteditable]{color:#000}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     VIEW 1 — SELECTOR
+     ============================================================ -->
+<section id="selector" class="view active">
+  <div class="sel-inner">
+    <div class="sel-top">
+      <div class="wordmark">KATHA<span class="thin">CHARYA</span></div>
+      <div class="eyebrow">Internal · Quotations</div>
+    </div>
+
+    <div class="sel-hero">
+      <div class="eyebrow kick">New Quotation</div>
+      <h1>Intentional films.<br><span class="l2">Precise numbers.</span></h1>
+      <p>Choose a production type to start a quote. Every line, rate, and section stays editable — and saves back as your studio's default rate card.</p>
+    </div>
+
+    <nav class="type-list" id="typeList"><!-- rows injected --></nav>
+
+    <div class="sel-foot">
+      <span>KATHACHARYA PRODUCTIONS · KATHMANDU, NEPAL</span>
+      <span class="saved-flag" id="savedFlag"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     VIEW 1.5 — PROJECT BRIEF (optional)
+     ============================================================ -->
+<section id="brief" class="view">
+  <div class="brief-screen">
+    <button class="tb-back" id="briefBack"><span class="ar">←</span> Types</button>
+    <div class="brief-body-wrap">
+      <div class="eyebrow kick">New Quotation</div>
+      <h1 id="briefCat">—</h1>
+      <p class="brief-help">Add a short brief if you like — scope, references, timeline. It's optional; skip it and you'll go straight to the quotation.
+      <br><span class="hint"><b>Tip —</b> write a budget however you like — <em>“1.5L to 3L”</em>, <em>“make the budget 3L”</em>, <em>“Nrs 4,00,000–6,00,000”</em> — and the quote auto-fits to it.</span></p>
+      <textarea id="briefInput" class="brief-ta" placeholder="e.g. 3-song acoustic session for an indie artist. One-day shoot in Kathmandu, moody monochrome look. Budget Nrs. 400000-600000."></textarea>
+      <div class="brief-actions">
+        <button class="btn btn-ghost" id="briefSkip">Skip</button>
+        <button class="btn btn-primary" id="briefGo">Create quotation →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     VIEW 2 — BUILDER
+     ============================================================ -->
+<section id="builder" class="view">
+  <div class="toolbar">
+    <div class="toolbar-in">
+      <button class="tb-back" id="backBtn"><span class="ar">←</span> Types</button>
+      <div class="tb-title">
+        <span class="k">Quotation</span>
+        <span class="n" id="tbType">—</span>
+      </div>
+      <div class="tb-spacer"></div>
+      <div class="tb-actions">
+        <button class="btn btn-ghost" id="saveRatesBtn" title="Save the current descriptions, units & rates as this type's default template">⤓ Save as default rates</button>
+        <button class="btn btn-ghost" id="resetBtn" title="Reload this type from your saved defaults">↻ Reset</button>
+        <button class="btn btn-ghost" id="fitBtn" title="Re-fit line rates to the budget range mentioned in the brief">◎ Fit to budget</button>
+        <button class="btn" id="exportBtn">⧉ Export</button>
+        <button class="btn" id="importBtn">⤒ Import</button>
+        <button class="btn btn-primary" id="printBtn">⎙ Print / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-wrap">
+    <div class="sheet" id="sheet"><!-- document injected --></div>
+  </div>
+</section>
+
+<!-- confirm modal -->
+<div class="modal-back" id="modalBack">
+  <div class="modal">
+    <h3 id="modalTitle">Confirm</h3>
+    <p id="modalBody">Are you sure?</p>
+    <div class="row">
+      <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button class="btn btn-primary" id="modalOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg">Saved</span></div>
+<input type="file" id="importFile" accept="application/json">
+
+<script>
+/* ============================================================
+   DATA — default rate card (from Kathacharya estimate pack)
+   Rates are illustrative starting values; fully editable.
+   ============================================================ */
+const DEFAULT_RATECARD = {
+  "music-video":{
+    label:"Music Video", sub:"Concept to final delivery",
+    title:"Music Video Production",
+    sections:[
+      {name:"Pre-Production",items:[
+        ["Concept Development & Treatment","Mood board, references, creative direction",1,"lump sum",25000],
+        ["Scriptwriting / Storyboard","Shot list, storyboard illustration",1,"lump sum",20000],
+        ["Location Scouting & Permits","Recce visits, municipal/private permits",1,"days",15000],
+        ["Casting","Casting calls, auditions for lead/extras",1,"lump sum",15000],
+        ["Wardrobe & Styling Planning","Costume sourcing, styling mood board",1,"lump sum",15000],
+        ["Production Planning & Scheduling","Call sheets, logistics, crew booking",1,"lump sum",50000],
+      ]},
+      {name:"Production",items:[
+        ["Director Fee","",1,"days",70000],
+        ["DOP & Camera Crew","Camera operator, 1st/2nd AC",1,"days",70000],
+        ["Lighting Crew & Equipment","Gaffer, lighting kit rental",1,"days",50000],
+        ["Grip Equipment","Dolly, slider, gimbal, drone",1,"days",10000],
+        ["Talent / Artist Fee","Lead performer(s) / dancers",1,"lump sum",50000],
+        ["Location Rental","",1,"days",30000],
+        ["Makeup & Styling (on-set)","MUA, hair, wardrobe assistant",1,"days",20000],
+        ["Catering & Transport","Crew meals, vehicle rental",1,"days",20000],
+        ["Behind-the-Scenes Coverage","BTS photos/video for promo",1,"lump sum",10000],
+      ]},
+      {name:"Post-Production",items:[
+        ["Offline Edit","Rough cut, story assembly",1,"lump sum",50000],
+        ["Color Grading","",1,"lump sum",30000],
+        ["VFX / Motion Graphics","Titles, effects, compositing",1,"lump sum",50000],
+        ["Sound Design & Mixing","SFX, audio sync, final mix",1,"lump sum",0],
+        ["Music Licensing (if applicable)","Third-party track clearance",1,"lump sum",0],
+        ["Revisions","Included revision rounds",2,"rounds",5000],
+        ["Final Delivery / Mastering","Export in required formats/resolutions",1,"lump sum",0],
+      ]},
+    ]
+  },
+  "documentary":{
+    label:"Documentary", sub:"Research to final cut",
+    title:"Documentary Production",
+    sections:[
+      {name:"Pre-Production",items:[
+        ["Research & Development","Subject research, background study",1,"lump sum",25000],
+        ["Script / Treatment Writing","Narrative structure, interview questions",1,"lump sum",30000],
+        ["Recce & Location Scouting","Site visits, access coordination",1,"days",15000],
+        ["Interview Scheduling & Coordination","Subject outreach, consent forms",1,"lump sum",15000],
+        ["Permits & Approvals","Filming permits, institutional clearance",1,"lump sum",0],
+      ]},
+      {name:"Production",items:[
+        ["Director & Crew Fees","Director, AD, production assistant",1,"lump sum",100000],
+        ["Camera & Sound Equipment","Camera kit, boom/lav mics, recorder",1,"days",40000],
+        ["Travel & Accommodation","Out-of-valley/field shoot logistics",1,"lump sum",50000],
+        ["Interview Shoot Days","Sit-down interview setups",1,"lump sum",70000],
+        ["B-Roll Shoot Days","Supplementary footage, drone shots",1,"lump sum",70000],
+        ["Local Transport","Vehicle hire, fuel",1,"days",15000],
+      ]},
+      {name:"Post-Production",items:[
+        ["Offline Edit","Logging, rough cut, narrative assembly",1,"lump sum",80000],
+        ["Color Grading","",1,"lump sum",30000],
+        ["Sound Design & Mix","Ambience, SFX, final audio mix",1,"lump sum",15000],
+        ["Narration / VO Recording","Voice artist, studio recording",1,"lump sum",20000],
+        ["Subtitles & Translation","Transcription, subtitle files",1,"lump sum",20000],
+        ["Archival Footage Licensing","Stock/archival clips, if required",1,"lump sum",5000],
+        ["Revisions & Final Delivery","Included revision rounds, master export",1,"rounds",15000],
+      ]},
+    ]
+  },
+  "short-film":{
+    label:"Short Film", sub:"Script to screen",
+    title:"Short Film Production",
+    sections:[
+      {name:"Pre-Production",items:[
+        ["Script Development","Screenplay drafts, script lock",1,"lump sum",25000],
+        ["Casting","Casting calls, auditions",1,"lump sum",15000],
+        ["Location Scouting & Permits","Recce, permits, location fees negotiation",1,"days",15000],
+        ["Production Planning","Shooting schedule, budgeting, call sheets",1,"lump sum",10000],
+        ["Crew Booking","Department heads confirmation",1,"lump sum",10000],
+      ]},
+      {name:"Production",items:[
+        ["Director & Crew Fees","Director, AD, production team",1,"days",70000],
+        ["Camera & Lighting Equipment","Camera package, lighting kit",1,"days",40000],
+        ["Cast Fees","Lead and supporting actors",1,"lump sum",50000],
+        ["Location Rental","",1,"days",30000],
+        ["Art Direction & Props","Set dressing, props, costumes",1,"lump sum",20000],
+        ["Catering & Transport","Crew meals, vehicle rental",1,"days",20000],
+      ]},
+      {name:"Post-Production",items:[
+        ["Editing","Offline & online edit",1,"lump sum",50000],
+        ["Color Grading","",1,"lump sum",30000],
+        ["Sound Design & Mix","SFX, foley, final mix",1,"lump sum",10000],
+        ["VFX","Visual effects, compositing",1,"lump sum",100000],
+        ["Festival Deliverables","DCP, subtitles, festival-format exports",1,"lump sum",30000],
+        ["Revisions","Included revision rounds",1,"rounds",5000],
+      ]},
+    ]
+  },
+  "short-form":{
+    label:"Short Form / Reels", sub:"Content batch — quote per set of reels",
+    title:"Short Form / Reels",
+    sections:[
+      {name:"Pre-Production",items:[
+        ["Concept & Trend Research","Platform trend research, hook ideation",1,"lump sum",25000],
+        ["Scripting / Content Planning","Script/shot list per reel",1,"per reel",3000],
+        ["Talent / Influencer Coordination","Booking, briefing",1,"lump sum",3000],
+      ]},
+      {name:"Production",items:[
+        ["Shoot Day (Crew & Equipment)","Camera, lighting, mobile/handheld rig",1,"days",10000],
+        ["Talent / Presenter Fee","",1,"lump sum",20000],
+        ["Location","",1,"days",5000],
+        ["Styling & Props","Wardrobe, props for shoot",1,"lump sum",2000],
+      ]},
+      {name:"Post-Production",items:[
+        ["Editing & Captioning","Cuts, on-screen text, subtitles",1,"per reel",10000],
+        ["Platform Formatting","9:16 exports for IG/TikTok/YouTube Shorts",1,"per reel",2000],
+        ["Sound / Music Sync","Trending audio sync, SFX",1,"per reel",1000],
+        ["Quick-Turnaround Revisions","Included revision rounds",1,"rounds",1000],
+        ["Delivery","Final files, scheduling assets if required",1,"lump sum",1000],
+      ]},
+    ],
+    extraTerm:"Recommended to quote per batch (e.g. per 5 or 10 reels) rather than per single reel for efficiency."
+  },
+  "3d":{
+    label:"3D / Animation", sub:"Modeling, animation & render pipeline",
+    title:"3D Production",
+    sections:[
+      {name:"Pre-Production",items:[
+        ["Concept & Script","Creative brief, narrative outline",1,"lump sum",12500],
+        ["Storyboard / Previz","Shot-by-shot previsualization",1,"lump sum",15000],
+        ["Reference Research","Style references, technical references",1,"lump sum",0],
+      ]},
+      {name:"Design & Modeling",items:[
+        ["3D Modeling","Character/object/environment modeling",1,"per asset",8000],
+        ["Texturing & Shading","Material and texture creation",1,"per asset",6000],
+        ["Rigging","Character/object rigging for animation",1,"per asset",38000],
+        ["Environment / Set Design","3D environment build",1,"lump sum",25000],
+      ]},
+      {name:"Animation",items:[
+        ["Character Animation","",10,"seconds",18000],
+        ["Camera Animation","Virtual camera blocking & moves",10,"lump sum",2750],
+        ["Lighting","Scene lighting setup",1,"lump sum",10000],
+        ["Simulation (FX)","Cloth, particles, fluids if required",10,"seconds",12500],
+      ]},
+      {name:"Post-Production",items:[
+        ["Rendering","Render farm / render time",10,"seconds",4800],
+        ["Compositing","Layer compositing, color correction",10,"seconds",5760],
+        ["Sound Design & Mix","SFX, score sync, final mix",1,"lump sum",30000],
+        ["Revisions","Included revision rounds",1,"rounds",0],
+        ["Final Output & Delivery","Export in required formats/resolutions",1,"lump sum",0],
+      ]},
+    ],
+    extraTerm:"Per-asset and per-second rates should reflect model/scene complexity — note complexity tier under Details for each line."
+  },
+  "post":{
+    label:"Post-Production", sub:"For footage shot elsewhere — edit to final master",
+    title:"Post-Production Services",
+    sections:[
+      {name:"Editing",items:[
+        ["Footage Ingest & Organization","Logging, syncing, proxies",1,"lump sum",25000],
+        ["Edit","Assembly, final edits",1,"lump sum",50000],
+      ]},
+      {name:"Color & Finishing",items:[
+        ["Color Grading","Primary & secondary grading",1,"lump sum",45000],
+      ]},
+      {name:"Sound",items:[
+        ["Sound Design","SFX, foley, ambience",1,"lump sum",35000],
+        ["Dialogue Editing & Cleanup","Noise reduction, ADR sync",1,"lump sum",12500],
+        ["Final Mix & Mastering","Stereo/5.1 mix, loudness mastering",1,"lump sum",8000],
+      ]},
+      {name:"VFX & Graphics",items:[
+        ["Visual Effects","Compositing, cleanup, effects shots",1,"per shot",3000],
+        ["Motion Graphics / Titles","Lower thirds, titles, end cards",1,"lump sum",25000],
+      ]},
+      {name:"Delivery",items:[
+        ["Revisions","Included revision rounds",1,"rounds",0],
+        ["Final Master & Format Exports","Multiple resolution/platform exports",1,"lump sum",10000],
+      ]},
+    ],
+    extraTerm:"This template assumes footage is already shot and delivered by the client; add an ‘Ingest’ line for footage received in non-standard formats."
+  },
+};
+
+const TYPE_ORDER = ["music-video","documentary","short-film","short-form","3d","post"];
+
+const BASE_TERMS = [
+  "This quotation is an estimate for budget approval purposes; final cost may vary based on scope changes.",
+  "50% advance payment required to confirm booking; balance due on final delivery.",
+  "Rates exclude third-party costs not listed above (e.g. talent/celebrity fees, special permits, insurance) unless specified.",
+  "Number of revision rounds beyond what is specified will be billed additionally.",
+  "Contingency covers minor on-set/production overruns and is not a guaranteed spend.",
+];
+
+const UNITS = ["lump sum","days","hours","rounds","per reel","per asset","per shot","seconds","per unit","per person"];
+
+/* ============================================================
+   STORAGE LAYER (persists rate card + quote counter)
+   Uses artifact window.storage when available; falls back to
+   in-memory so nothing breaks when self-hosted.
+   ============================================================ */
+const mem = {};
+const HAS_STORE = (typeof window !== "undefined" && window.storage && typeof window.storage.get === "function");
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+async function sGet(key){
+  // In the Claude preview, use window.storage only. Self-hosted, use the browser's localStorage.
+  if(HAS_STORE){ try{ const r = await window.storage.get(key); return r ? r.value : null; }catch(e){ return null; } }
+  const ls = lsGet(key); if(ls!==null) return ls;
+  return key in mem ? mem[key] : null;
+}
+async function sSet(key,val){
+  if(HAS_STORE){ try{ await window.storage.set(key,val); }catch(e){} return; }
+  lsSet(key,val); mem[key] = val;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let ratecard = JSON.parse(JSON.stringify(DEFAULT_RATECARD)); // active defaults (may be overridden from storage)
+let current = null;      // working quote object
+let currentType = null;  // type key
+const el = id => document.getElementById(id);
+
+/* build a fresh working quote from the (possibly saved) rate card */
+function newQuote(typeKey){
+  const tpl = ratecard[typeKey];
+  const today = new Date();
+  const valid = new Date(today.getTime()+30*864e5);
+  const terms = BASE_TERMS.slice();
+  if(tpl.extraTerm) terms.push(tpl.extraTerm);
+  return {
+    type:typeKey,
+    title:tpl.title,
+    sub:tpl.sub,
+    client:"", project:"", contact:"",
+    brief:"", budgetLow:null, budgetHigh:null,
+    qno:"", // filled after counter read
+    date:fmtDate(today),
+    valid:fmtDate(valid),
+    sections: tpl.sections.map(s=>({
+      name:s.name,
+      items:s.items.map(it=>({desc:it[0],notes:it[1],qty:it[2],unit:"",rate:it[4]}))
+    })),
+    contingency:5, contEnabled:true,
+    vat:13, vatEnabled:true,
+    terms:terms,
+  };
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function fmtMoney(n){
+  if(!isFinite(n)) n=0;
+  return n.toLocaleString('en-IN',{maximumFractionDigits:2});
+}
+function fmtDate(d){
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function budgetLabel(low,high){
+  return low===high ? `NPR ${fmtMoney(low)}` : `NPR ${fmtMoney(low)} – ${fmtMoney(high)}`;
+}
+function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+
+function toast(msg,ok){
+  const t=el('toast'); el('toastMsg').textContent=msg;
+  t.classList.toggle('ok',!!ok); t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ============================================================
+   SELECTOR RENDER
+   ============================================================ */
+function renderSelector(){
+  const list = el('typeList');
+  list.innerHTML = TYPE_ORDER.map((k,i)=>{
+    const t = ratecard[k];
+    const idx = String(i+1).padStart(3,'0');
+    return `<button class="type-row" data-type="${k}">
+      <span class="type-idx">${idx}</span>
+      <span><span class="type-name">${esc(t.label)}</span>
+      <span class="type-sub">${esc(t.sub)}</span></span>
+      <span class="type-arrow">→</span>
+    </button>`;
+  }).join('');
+  list.querySelectorAll('.type-row').forEach(b=>{
+    b.addEventListener('click',()=>chooseType(b.dataset.type));
+  });
+}
+
+/* ============================================================
+   SELECT TYPE → BRIEF → BUILDER
+   ============================================================ */
+let pendingType = null;
+
+function chooseType(typeKey){
+  pendingType = typeKey;
+  el('briefCat').textContent = ratecard[typeKey].label;
+  el('briefInput').value = "";
+  el('brief').classList.add('active');   // reveal the brief below the picker
+  requestAnimationFrame(()=>{ el('brief').scrollIntoView({behavior:'smooth',block:'start'}); });
+}
+
+function gotoSelector(){
+  el('brief').classList.remove('active');
+  el('builder').classList.remove('active');
+  el('selector').classList.add('active');
+  renderSelector(); refreshSavedFlag();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function gotoBuilder(){
+  // keep the picker/brief mounted above so this reads as a scroll DOWN to the quotation
+  el('builder').classList.add('active');
+  requestAnimationFrame(()=>{ el('builder').scrollIntoView({behavior:'smooth',block:'start'}); });
+}
+
+async function startQuote(briefText){
+  currentType = pendingType;
+  current = newQuote(currentType);
+  // quote number from counter
+  let c = parseInt(await sGet('quoteCounter')||'0',10);
+  c += 1; await sSet('quoteCounter',String(c));
+  const yr = new Date().getFullYear();
+  current.qno = `KP-QTN-${yr}-${String(c).padStart(3,'0')}`;
+  current.brief = (briefText||"").trim();
+
+  const msgs=[];
+  // 1) add / remove lines the brief asks for
+  if(current.brief){
+    const ed=applyEdits(current, parseEdits(current.brief));
+    if(ed.removed) msgs.push(`removed ${ed.removed} line${ed.removed>1?'s':''}`);
+    if(ed.added)   msgs.push(`added ${ed.added} line${ed.added>1?'s':''}`);
+  }
+  // 2) fit to a budget mentioned in the brief
+  let b=null, fitted=false;
+  if(current.brief){
+    b = parseBudget(current.brief);
+    if(b){ current.budgetLow=b.low; current.budgetHigh=b.high; fitted=tuneToBudget(current); }
+  }
+  if(b) msgs.push(fitted?`fitted to ${budgetLabel(b.low,b.high)}`:`within ${budgetLabel(b.low,b.high)}`);
+
+  el('tbType').textContent = ratecard[currentType].label;
+  renderSheet();
+  gotoBuilder();
+  if(msgs.length){ const s=msgs.join(' · '); toast(s.charAt(0).toUpperCase()+s.slice(1), true); }
+}
+
+/* --- budget parsing: find a money range OR a single amount in free text --- */
+function parseBudget(text){
+  if(!text) return null;
+  const t = String(text).toLowerCase();
+  const unitMul = u => {
+    if(!u) return 1; u=u.replace(/\./g,'');
+    if(/^(lakhs?|lacs?|lac|l)$/.test(u)) return 1e5;
+    if(/^(crores?|cr)$/.test(u)) return 1e7;
+    if(/^(k|thousand)$/.test(u)) return 1e3;
+    if(/^(m|million|mn)$/.test(u)) return 1e6;
+    return 1;
+  };
+  const numRe   = '(\\d[\\d.,]*)';
+  const unitRe  = '(?:\\s*(lakhs?|lacs?|lac|l|crores?|cr|k|thousand|million|mn|m)(?![a-z]))?';
+  const sep     = '(?:\\s*[-–—~]\\s*|\\s+to\\s+)';
+  const clean   = s => parseFloat(String(s).replace(/,/g,'').replace(/\.+$/,''));
+  const moneyWord  = /(nrs|rs\.?|npr|rupees?|budget|₹|price|cost|around|approx)/;
+  const strongUnit = u => /^(lakhs?|lacs?|lac|l|crores?|cr)$/.test(u||'');
+  let m;
+
+  // 1) a range: "1.5L to 3L", "500000-800000", "4 to 6 lakh"
+  const reR = new RegExp(numRe+unitRe+sep+numRe+unitRe,'gi');
+  while((m=reR.exec(t))){
+    let n1=clean(m[1]), u1=m[2], n2=clean(m[3]), u2=m[4];
+    if(isNaN(n1)||isNaN(n2)) continue;
+    let low=n1*unitMul(u1||u2), high=n2*unitMul(u2||u1);
+    const ctx=t.slice(Math.max(0,m.index-18), m.index+m[0].length+10);
+    if(!(moneyWord.test(ctx) || u1 || u2 || low>=10000 || high>=10000)) continue;
+    if(low>high){ const tmp=low; low=high; high=tmp; }
+    if(low<=0||high<=0) continue;
+    return {low:Math.round(low), high:Math.round(high)};
+  }
+
+  // 2) a single amount: "make the budget 3L", "6 lakh", "Nrs 600000"
+  const reS = new RegExp(numRe+unitRe,'gi');
+  while((m=reS.exec(t))){
+    let n=clean(m[1]), u=m[2];
+    if(isNaN(n)) continue;
+    let val=n*unitMul(u);
+    const ctx=t.slice(Math.max(0,m.index-14), m.index+m[0].length+4);
+    if(!(moneyWord.test(ctx) || strongUnit(u))) continue;  // need a money cue
+    if(val<1000 || val<=0) continue;
+    return {low:Math.round(val), high:Math.round(val)};
+  }
+  return null;
+}
+
+/* --- totals helpers (VAT on subtotal+contingency) --- */
+function subtotalOf(q){ let s=0; q.sections.forEach(sec=>sec.items.forEach(it=>s+=num(it.qty)*num(it.rate))); return s; }
+function grandOf(q){
+  const sub=subtotalOf(q);
+  const c=q.contEnabled?num(q.contingency)/100:0, v=q.vatEnabled?num(q.vat)/100:0;
+  const cont=sub*c; return sub+cont+(sub+cont)*v;
+}
+
+/* --- scale line rates so the grand total lands inside the range --- */
+function tuneToBudget(q){
+  if(q.budgetLow==null||q.budgetHigh==null) return false;
+  const sub=subtotalOf(q); if(sub<=0) return false;
+  const grand=grandOf(q), low=q.budgetLow, high=q.budgetHigh;
+  if(grand>=low && grand<=high) return false;       // already fits — leave as is
+  const target=(low+high)/2;
+  const c=q.contEnabled?num(q.contingency)/100:0, v=q.vatEnabled?num(q.vat)/100:0;
+  const factor=(target/((1+c)*(1+v)))/sub;
+  q.sections.forEach(sec=>sec.items.forEach(it=>{
+    const r=num(it.rate);
+    if(r>0) it.rate=Math.max(100,Math.round(r*factor/100)*100);  // keep tidy round hundreds
+  }));
+  return true;
+}
+
+/* --- add / remove line items requested in the brief --- */
+function parseEdits(text){
+  const removes=[], adds=[];
+  if(!text) return {removes,adds};
+  const t=String(text).replace(/\s+/g,' ');
+  const split=s=>s.split(/\s*(?:,|&|\band\b|\bplus\b)\s*/i).map(x=>x.trim().replace(/^(the|a|an) /i,'')).filter(x=>x.length>1);
+  let m;
+  const remRe=/\b(?:remove|exclude|drop|delete|omit|skip|cut|without|don'?t need|no need (?:for|of)?|leave out)\s+(?:the |a |an )?([a-z0-9][a-z0-9 ,&/-]*?)(?=[.;]|\bbut\b|\bbudget\b|\badd\b|\binclude\b|\bremove\b|\bexclude\b|\bdrop\b|\bskip\b|\bcut\b|\bdelete\b|\bomit\b|\bwithout\b|$)/gi;
+  while((m=remRe.exec(t))) split(m[1]).forEach(x=>removes.push(x));
+  const addRe=/\b(?:add|include|also (?:need|want|include|add)|with an? added?)\s+(?:the |a |an )?([a-z0-9][a-z0-9 ,&/-]*?)(?=[.;]|\bbut\b|\bbudget\b|\bremove\b|\bexclude\b|\bdrop\b|\bwithout\b|\bskip\b|\badd\b|\binclude\b|$)/gi;
+  while((m=addRe.exec(t))) split(m[1]).forEach(x=>adds.push(x));
+  return {removes,adds};
+}
+function tokenHit(desc, phrase){
+  const A=desc.split(/[^a-z0-9]+/).filter(w=>w.length>2);
+  const B=phrase.split(/[^a-z0-9]+/).filter(w=>w.length>2);
+  if(!A.length||!B.length) return false;
+  const setA=new Set(A);
+  const common=B.filter(w=>setA.has(w)).length;
+  return common>0 && common/B.length>=0.6;
+}
+function applyEdits(quote, edits){
+  let removed=0, added=0;
+  edits.removes.forEach(phrase=>{
+    const p=phrase.toLowerCase().trim(); if(p.length<2) return;
+    quote.sections.forEach(sec=>{
+      const before=sec.items.length;
+      sec.items=sec.items.filter(it=>{
+        const d=(it.desc||'').toLowerCase();
+        if(!d) return true;
+        return !(d.includes(p) || p.includes(d) || tokenHit(d,p));
+      });
+      removed += before - sec.items.length;
+    });
+  });
+  quote.sections = quote.sections.filter(s=>s.items.length>0);
+  if(edits.adds.length){
+    let sec=quote.sections.find(s=>/(additional|add-?ons|extras?)/i.test(s.name));
+    if(!sec){ sec={name:"Additional", items:[]}; quote.sections.push(sec); }
+    edits.adds.forEach(phrase=>{
+      const name=phrase.replace(/\b\w/g,c=>c.toUpperCase()).trim();
+      if(name.length<2) return;
+      sec.items.push({desc:name, notes:"", qty:1, unit:"", rate:0});
+      added++;
+    });
+  }
+  return {removed, added};
+}
+
+/* ============================================================
+   BUILDER — RENDER SHEET
+   ============================================================ */
+function renderSheet(){
+  const q = current;
+  let sn = 0;
+  const sectionsHTML = q.sections.map((sec,si)=>{
+    const rows = sec.items.map((it,ri)=>{
+      sn++;
+      const amt = num(it.qty)*num(it.rate);
+      return `<tr class="item-row" data-si="${si}" data-ri="${ri}">
+        <td class="td-sn">${String(sn).padStart(2,'0')}</td>
+        <td class="td-desc">
+          <div class="it-desc" contenteditable="true" data-f="desc" data-ph="Item description">${esc(it.desc)}</div>
+          <div class="it-notes" contenteditable="true" data-f="notes" data-ph="Details / notes (optional)">${esc(it.notes)}</div>
+        </td>
+        <td class="td-qty"><input class="cell-in in-qty" data-f="qty" type="number" min="0" step="any" value="${it.qty}"></td>
+        <td class="td-unit"><input class="cell-in in-unit" data-f="unit" list="unitList" value="${esc(it.unit)}"></td>
+        <td class="td-rate"><input class="cell-in in-rate" data-f="rate" type="number" min="0" step="any" value="${it.rate}"></td>
+        <td class="td-amt" data-amt="${si}-${ri}">${fmtMoney(amt)}</td>
+        <td class="td-del"><button class="row-del" data-act="delRow" title="Remove line">✕</button></td>
+      </tr>`;
+    }).join('');
+    return `
+      <tr class="sec-row ${si===0?'first':''}" data-si="${si}">
+        <td></td>
+        <td colspan="4"><span class="sec-name" contenteditable="true" data-f="secname" data-ph="Section name">${esc(sec.name)}</span>
+        <button class="sec-del" data-act="delSec" title="Remove section">Remove section</button></td>
+        <td></td><td></td>
+      </tr>
+      ${rows}
+      <tr class="add-row" data-si="${si}"><td></td><td colspan="6">
+        <button class="add-line" data-act="addRow">＋ Add line</button>
+      </td></tr>
+      <tr class="sub-row"><td></td>
+        <td colspan="4"><span class="sub-lbl">${esc(sec.name)} Subtotal</span></td>
+        <td class="sub-amt" data-sub="${si}"></td><td></td>
+      </tr>
+      <tr class="sec-gap"><td colspan="7"></td></tr>`;
+  }).join('');
+
+  const termsHTML = q.terms.map((t,i)=>`<li contenteditable="true" data-ti="${i}">${esc(t)}<span class="term-del" contenteditable="false" data-act="delTerm" title="Remove">✕</span></li>`).join('');
+
+  q._sheetHTML = `
+    <div class="doc-head">
+      <div class="doc-brand">
+        <div class="mk">KATHA<span class="thin">CHARYA</span></div>
+        <div class="tag">Productions · Kathmandu, Nepal</div>
+      </div>
+      <div class="doc-qt">
+        <div class="lbl">Quotation No.</div>
+        <input class="fld tnum" style="text-align:right;font-weight:600" data-meta="qno" value="${esc(q.qno)}">
+      </div>
+    </div>
+
+    <div class="filmstrip"></div>
+
+    <div class="doc-type">
+      <h2 contenteditable="true" data-meta="title">${esc(q.title)}</h2>
+      <span class="dash">—</span>
+      <span class="sub" contenteditable="true" data-meta="sub">${esc(q.sub)}</span>
+    </div>
+
+    <div class="meta">
+      <div class="meta-col">
+        <div class="meta-row"><span class="meta-lbl">Client / Company</span><input class="fld" data-meta="client" placeholder="Client name" value="${esc(q.client)}"></div>
+        <div class="meta-row"><span class="meta-lbl">Project Title</span><input class="fld" data-meta="project" placeholder="Project title" value="${esc(q.project)}"></div>
+        <div class="meta-row"><span class="meta-lbl">Contact Person</span><input class="fld" data-meta="contact" placeholder="Contact person" value="${esc(q.contact)}"></div>
+      </div>
+      <div class="meta-col">
+        <div class="meta-row"><span class="meta-lbl">Date</span><input class="fld" data-meta="date" value="${esc(q.date)}"></div>
+        <div class="meta-row"><span class="meta-lbl">Valid Until</span><input class="fld" data-meta="valid" value="${esc(q.valid)}"></div>
+        <div class="meta-row"><span class="meta-lbl">Currency</span><input class="fld" data-meta="cur" value="NPR (Nepalese Rupee)" readonly style="color:var(--doc-mut)"></div>
+      </div>
+    </div>
+
+    <div class="items-wrap"><table class="items">
+      <thead><tr>
+        <th class="c-sn">№</th><th>Item</th>
+        <th class="c-qty">Qty</th><th class="c-unit">Unit</th>
+        <th class="c-rate">Rate</th><th class="c-amt">Amount</th><th class="c-del"></th>
+      </tr></thead>
+      <tbody id="itemsBody">${sectionsHTML}</tbody>
+    </table></div>
+
+    <button class="add-section" data-act="addSec">＋ Add section</button>
+
+    <div class="totals"><div class="totals-inner">
+      <div class="tot-row"><span class="tl">Subtotal</span><span class="tv tnum" id="tSub"></span></div>
+      ${q.contEnabled?`<div class="tot-row"><span class="tl">Contingency
+        <input class="pct-in" id="contPct" type="number" min="0" step="any" value="${q.contingency}">%
+        <button class="opt-del" data-act="delCont" title="Remove contingency">✕</button></span>
+        <span class="tv tnum" id="tCont"></span></div>`:``}
+      ${q.vatEnabled?`<div class="tot-row"><span class="tl">VAT
+        <input class="pct-in" id="vatPct" type="number" min="0" step="any" value="${q.vat}">%
+        <button class="opt-del" data-act="delVat" title="Remove VAT">✕</button></span>
+        <span class="tv tnum" id="tVat"></span></div>`:``}
+      ${(!q.contEnabled||!q.vatEnabled)?`<div class="tot-add">
+        ${!q.contEnabled?`<button class="add-opt" data-act="addCont">＋ Contingency</button>`:``}
+        ${!q.vatEnabled?`<button class="add-opt" data-act="addVat">＋ VAT</button>`:``}
+      </div>`:``}
+      <div class="tot-grand"><span class="tl">Grand Total</span>
+        <span><span class="cur">NPR</span><span class="tv tnum" id="tGrand"></span></span></div>
+      ${(q.budgetLow!=null)?`<div class="budget-chip">Target budget · <b>${budgetLabel(q.budgetLow,q.budgetHigh)}</b></div>`:''}
+    </div></div>
+
+    <div class="terms">
+      <h3>Terms & Notes</h3>
+      <ul id="termsList">${termsHTML}</ul>
+      <button class="add-term" data-act="addTerm">＋ Add term</button>
+    </div>
+
+    <div class="signs">
+      <div class="sign"><div class="line"><div class="lbl">Prepared by</div><div class="sub">Kathacharya Productions</div></div></div>
+      <div class="sign"><div class="line"><div class="lbl">Client Approval</div><div class="sub">Signature & date</div></div></div>
+    </div>
+
+    <div class="doc-foot">
+      <span>Kathacharya Productions</span>
+      <span>This estimate is valid until the date noted above</span>
+    </div>`;
+
+  el('sheet').innerHTML = q._sheetHTML;
+  bindSheet();
+  recalc();
+}
+
+/* ============================================================
+   RECALCULATE (in-place, preserves caret)
+   VAT is charged on (subtotal + contingency) — matches source sheet
+   ============================================================ */
+function recalc(){
+  const q = current; let subtotal = 0;
+  q.sections.forEach((sec,si)=>{
+    let sub = 0;
+    sec.items.forEach((it,ri)=>{
+      const amt = num(it.qty)*num(it.rate); sub += amt;
+      const cell = el('sheet').querySelector(`[data-amt="${si}-${ri}"]`);
+      if(cell) cell.textContent = fmtMoney(amt);
+    });
+    subtotal += sub;
+    const subCell = el('sheet').querySelector(`[data-sub="${si}"]`);
+    if(subCell) subCell.textContent = fmtMoney(sub);
+  });
+  const cont = q.contEnabled ? subtotal*(num(q.contingency)/100) : 0;
+  const vat  = q.vatEnabled  ? (subtotal+cont)*(num(q.vat)/100)   : 0;
+  const grand= subtotal+cont+vat;
+  el('tSub').textContent = fmtMoney(subtotal);
+  const cc=el('tCont'); if(cc) cc.textContent = fmtMoney(cont);
+  const vc=el('tVat');  if(vc) vc.textContent = fmtMoney(vat);
+  el('tGrand').textContent = fmtMoney(grand);
+}
+
+/* ============================================================
+   BIND SHEET EVENTS
+   ============================================================ */
+function bindSheet(){
+  const sheet = el('sheet');
+
+  // meta fields (client, project, dates, title, sub, qno)
+  sheet.querySelectorAll('[data-meta]').forEach(node=>{
+    const key = node.dataset.meta;
+    const ev = node.tagName==='INPUT' ? 'input' : 'input';
+    node.addEventListener(ev,()=>{
+      current[key] = node.tagName==='INPUT'?node.value:node.textContent;
+    });
+  });
+
+  // brief empty-state controls whether it prints
+  const bfield=sheet.querySelector('[data-meta="brief"]');
+  if(bfield) bfield.addEventListener('input',()=>{ const bl=el('briefBlock'); if(bl) bl.classList.toggle('empty', !bfield.textContent.trim()); });
+
+  // item field edits
+  sheet.querySelectorAll('.item-row').forEach(row=>{
+    const si=+row.dataset.si, ri=+row.dataset.ri;
+    row.querySelectorAll('[data-f]').forEach(node=>{
+      const f=node.dataset.f;
+      node.addEventListener('input',()=>{
+        const it=current.sections[si].items[ri];
+        if(f==='desc'||f==='notes') it[f]=node.textContent;
+        else if(f==='unit') it.unit=node.value;
+        else it[f]=node.value; // qty, rate
+        if(f==='qty'||f==='rate') recalc();
+      });
+    });
+  });
+
+  // section name edits
+  sheet.querySelectorAll('.sec-row').forEach(row=>{
+    const si=+row.dataset.si;
+    const nm=row.querySelector('[data-f="secname"]');
+    if(nm) nm.addEventListener('input',()=>{ current.sections[si].name=nm.textContent; });
+  });
+
+  // terms edits
+  sheet.querySelectorAll('#termsList li').forEach(li=>{
+    const ti=+li.dataset.ti;
+    li.addEventListener('input',()=>{
+      // textContent minus the ✕ button text
+      const clone=li.cloneNode(true);
+      const b=clone.querySelector('.term-del'); if(b) b.remove();
+      current.terms[ti]=clone.textContent.trim();
+    });
+  });
+
+  // contingency / vat %
+  const cp=el('contPct'); if(cp) cp.addEventListener('input',e=>{current.contingency=e.target.value;recalc();});
+  const vp=el('vatPct');  if(vp) vp.addEventListener('input',e=>{current.vat=e.target.value;recalc();});
+
+  // action buttons (delegate)
+  sheet.querySelectorAll('[data-act]').forEach(btn=>{
+    btn.addEventListener('click',()=>handleAct(btn));
+  });
+}
+
+function handleAct(btn){
+  const act=btn.dataset.act;
+  if(act==='addRow'){
+    const si=+btn.closest('.add-row').dataset.si;
+    current.sections[si].items.push({desc:"",notes:"",qty:1,unit:"lump sum",rate:0});
+    renderSheet(); focusLastRow(si);
+  }
+  else if(act==='delRow'){
+    const tr=btn.closest('.item-row');
+    const si=+tr.dataset.si, ri=+tr.dataset.ri;
+    current.sections[si].items.splice(ri,1);
+    if(current.sections[si].items.length===0) current.sections[si].items.push({desc:"",notes:"",qty:1,unit:"lump sum",rate:0});
+    renderSheet();
+  }
+  else if(act==='addSec'){
+    current.sections.push({name:"New Section",items:[{desc:"",notes:"",qty:1,unit:"lump sum",rate:0}]});
+    renderSheet();
+  }
+  else if(act==='delSec'){
+    const si=+btn.closest('.sec-row').dataset.si;
+    if(current.sections.length<=1){toast("Keep at least one section");return;}
+    confirmModal("Remove section?","This deletes the section and all its line items.",()=>{
+      current.sections.splice(si,1); renderSheet();
+    });
+  }
+  else if(act==='delCont'){ current.contEnabled=false; renderSheet(); }
+  else if(act==='addCont'){ current.contEnabled=true; renderSheet(); }
+  else if(act==='delVat'){ current.vatEnabled=false; renderSheet(); }
+  else if(act==='addVat'){ current.vatEnabled=true; renderSheet(); }
+  else if(act==='addTerm'){
+    current.terms.push("New term or note"); renderSheet();
+  }
+  else if(act==='delTerm'){
+    const ti=+btn.closest('li').dataset.ti;
+    current.terms.splice(ti,1); renderSheet();
+  }
+}
+
+function focusLastRow(si){
+  const rows=el('sheet').querySelectorAll(`.item-row[data-si="${si}"]`);
+  const last=rows[rows.length-1];
+  if(last){const d=last.querySelector('.it-desc');if(d)d.focus();}
+}
+
+/* ============================================================
+   CONFIRM MODAL
+   ============================================================ */
+let modalCb=null;
+function confirmModal(title,body,cb){
+  el('modalTitle').textContent=title; el('modalBody').textContent=body;
+  modalCb=cb; el('modalBack').classList.add('show');
+}
+el('modalCancel').addEventListener('click',()=>{el('modalBack').classList.remove('show');modalCb=null;});
+el('modalOk').addEventListener('click',()=>{el('modalBack').classList.remove('show');if(modalCb)modalCb();modalCb=null;});
+el('modalBack').addEventListener('click',e=>{if(e.target===el('modalBack')){el('modalBack').classList.remove('show');modalCb=null;}});
+
+/* ============================================================
+   TOOLBAR ACTIONS
+   ============================================================ */
+el('backBtn').addEventListener('click',()=>{ gotoSelector(); });
+el('printBtn').addEventListener('click',()=>window.print());
+
+/* brief screen */
+el('briefBack').addEventListener('click',()=>{ gotoSelector(); });
+el('briefGo').addEventListener('click',()=>startQuote(el('briefInput').value));
+el('briefSkip').addEventListener('click',()=>startQuote(""));
+
+/* fit-to-budget (re-reads the brief and rescales rates) */
+el('fitBtn').addEventListener('click',()=>{
+  const b=parseBudget(current.brief||"");
+  if(!b){ toast('Add a budget like “Nrs 500000-800000” in the brief'); return; }
+  current.budgetLow=b.low; current.budgetHigh=b.high;
+  const changed=tuneToBudget(current);
+  renderSheet();
+  toast(changed?`Fitted to ${budgetLabel(b.low,b.high)}`:`Already within ${budgetLabel(b.low,b.high)}`,true);
+});
+
+/* Save current line structure (desc/notes/unit/rate/qty + sections) as this type's defaults */
+el('saveRatesBtn').addEventListener('click',()=>{
+  confirmModal("Save as default rates?",
+    "This updates the "+ratecard[currentType].label+" template with the current sections, descriptions, units and rates. Future quotes of this type will start from these. Client details and quote number are not saved.",
+    async ()=>{
+      ratecard[currentType] = {
+        label:ratecard[currentType].label,
+        sub:current.sub,
+        title:current.title,
+        extraTerm:ratecard[currentType].extraTerm,
+        sections: current.sections.map(s=>({
+          name:s.name,
+          items:s.items.map(it=>[it.desc,it.notes,num(it.qty),it.unit,num(it.rate)])
+        }))
+      };
+      await sSet('ratecard',JSON.stringify(ratecard));
+      toast("Default rates saved",true);
+    });
+});
+
+/* Reset current quote to saved/default template for this type */
+el('resetBtn').addEventListener('click',()=>{
+  confirmModal("Reset this quote?","Reloads line items from your saved defaults. Current edits on this quote will be lost (quote number kept).",()=>{
+    const qno=current.qno, client=current.client, project=current.project, contact=current.contact;
+    current=newQuote(currentType);
+    current.qno=qno; current.client=client; current.project=project; current.contact=contact;
+    renderSheet(); toast("Reset to defaults",true);
+  });
+});
+
+/* Export current quote as JSON */
+el('exportBtn').addEventListener('click',()=>{
+  const data=JSON.stringify(current,null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const safe=(current.qno||'quotation').replace(/[^\w\-]/g,'_');
+  a.href=url; a.download=safe+'.json'; a.click();
+  URL.revokeObjectURL(url);
+  toast("Quotation exported",true);
+});
+
+/* Import a quote JSON */
+el('importBtn').addEventListener('click',()=>el('importFile').click());
+el('importFile').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data.sections) throw new Error("bad");
+      current=data; currentType=data.type||currentType;
+      if(current.contEnabled===undefined) current.contEnabled=true;
+      if(current.vatEnabled===undefined)  current.vatEnabled=true;
+      if(current.brief===undefined) current.brief="";
+      if(current.budgetLow===undefined) current.budgetLow=null;
+      if(current.budgetHigh===undefined) current.budgetHigh=null;
+      el('tbType').textContent=(ratecard[currentType]?ratecard[currentType].label:'Imported');
+      renderSheet(); gotoBuilder(); toast("Quotation imported",true);
+    }catch(err){ toast("Couldn't read that file"); }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+async function refreshSavedFlag(){
+  const saved = await sGet('ratecard');
+  el('savedFlag').textContent = saved ? "✓ Using your saved rate card" : (HAS_STORE?"Using built-in rates":"Using built-in rates · saved on this device");
+}
+
+async function init(){
+  // datalist for units
+  const dl=document.createElement('datalist'); dl.id='unitList';
+  dl.innerHTML=UNITS.map(u=>`<option value="${u}">`).join('');
+  document.body.appendChild(dl);
+
+  // load saved rate card if present
+  const saved=await sGet('ratecard');
+  if(saved){
+    try{
+      const parsed=JSON.parse(saved);
+      // merge: saved sections come as [desc,notes,qty,unit,rate]; rebuild into DEFAULT shape
+      TYPE_ORDER.forEach(k=>{ if(parsed[k]) ratecard[k]=parsed[k]; });
+    }catch(e){}
+  }
+  renderSelector();
+  refreshSavedFlag();
+}
+init();
+</script>
+</body>
+</html>
