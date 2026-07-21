@@ -65,6 +65,9 @@ input,textarea,[contenteditable]{font-family:inherit}
    ============================================================ */
 .view{display:none}
 .view.active{display:block}
+#brief.active{animation:fadeIn .45s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#brief.active{animation:none}}
 
 /* ============================================================
    1) SELECTOR SCREEN
@@ -145,6 +148,31 @@ input,textarea,[contenteditable]{font-family:inherit}
 .sel-foot a{color:var(--shell-mut);text-decoration:none}
 .sel-foot a:hover{color:var(--shell-text)}
 .saved-flag{color:var(--shell-faint)}
+
+/* ============================================================
+   1.5) BRIEF SCREEN
+   ============================================================ */
+#brief{
+  min-height:100vh;
+  background:radial-gradient(120% 80% at 50% -10%, #17150F 0%, var(--shell-bg) 55%, #060605 100%);
+  display:flex;flex-direction:column;position:relative;
+}
+.brief-screen{width:100%;max-width:760px;margin:0 auto;padding:40px 40px 64px;flex:1;display:flex;flex-direction:column}
+.brief-body-wrap{margin-top:auto;margin-bottom:auto;padding-top:40px}
+#brief .kick{color:var(--accent);margin-bottom:18px}
+#brief h1{font-size:clamp(30px,5.4vw,52px);line-height:1;font-weight:700;letter-spacing:-.02em;color:var(--shell-text)}
+.brief-help{margin:20px 0 22px;color:var(--shell-mut);font-size:14.5px;line-height:1.65;max-width:600px}
+.brief-help b{color:var(--shell-text);font-weight:600}
+.brief-help em{color:var(--shell-text);font-style:normal;font-weight:500}
+.brief-help .hint{display:inline-block;margin-top:8px;font-size:13px;color:var(--shell-faint)}
+.brief-ta{
+  width:100%;min-height:150px;background:var(--shell-panel);border:1px solid var(--shell-line2);
+  border-radius:12px;color:var(--shell-text);font-size:14.5px;line-height:1.6;padding:16px 18px;
+  resize:vertical;outline:none;font-family:inherit;transition:border-color .2s;
+}
+.brief-ta:focus{border-color:#3f3d33}
+.brief-ta::placeholder{color:var(--shell-faint)}
+.brief-actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end}
 
 /* ============================================================
    2) BUILDER SCREEN
@@ -246,6 +274,13 @@ input,textarea,[contenteditable]{font-family:inherit}
 .fld::placeholder{color:var(--doc-faint);font-weight:400}
 .fld:focus{background:var(--doc-tint)}
 .fld:hover:not(:focus){background:#faf9f5}
+
+/* Project brief (optional, prints only if filled) */
+.brief-block{margin-top:18px;border-left:2px solid var(--doc-line-strong);padding:1px 0 1px 14px}
+.brief-lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--doc-faint);font-weight:700;margin-bottom:4px}
+.brief-text{font-size:12.5px;line-height:1.55;color:var(--doc-body);outline:none;border-radius:4px;padding:2px 4px;min-height:1.2em}
+.brief-text:focus{background:var(--doc-tint)}
+.brief-block.empty .brief-lbl{opacity:.55}
 
 /* Line-item table */
 table.items{width:100%;border-collapse:collapse;margin-top:26px}
@@ -363,6 +398,8 @@ tr.sec-gap td{height:22px;border:none;background:transparent;padding:0}
 .tot-grand .tl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--doc-ink)}
 .tot-grand .tv{font-size:24px;font-weight:700;color:var(--doc-ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .tot-grand .cur{font-size:12px;font-weight:600;color:var(--doc-mut);margin-right:5px;letter-spacing:.06em}
+.budget-chip{margin-top:9px;text-align:right;font-size:10.5px;letter-spacing:.03em;color:var(--doc-mut);font-weight:500}
+.budget-chip b{color:var(--doc-ink);font-weight:600}
 
 /* Terms + signatures */
 .terms{margin-top:38px;border-top:1px solid var(--doc-line);padding-top:20px}
@@ -427,13 +464,64 @@ tr.sec-gap td{height:22px;border:none;background:transparent;padding:0}
    ============================================================ */
 @media (max-width:720px){
   .sel-inner{padding:32px 22px 44px}
-  .sheet{padding:34px 24px 34px}
+  .brief-screen{padding:30px 22px 48px}
+  .sheet-wrap{padding:20px 12px 70px}
+  .sheet{padding:30px 20px 30px}
   .meta{grid-template-columns:1fr;gap:0}
   .doc-head{flex-direction:column;gap:14px}
   .doc-qt{text-align:left}
   th.c-unit{display:none}.item-row .td-unit{display:none}
   .type-row{grid-template-columns:44px 1fr auto;gap:14px}
   .signs{grid-template-columns:1fr;gap:26px}
+  .totals-inner{width:100%}
+}
+
+/* phones — keep the quotation readable without horizontal scrolling */
+@media (max-width:560px){
+  .toolbar-in{padding:10px 12px;gap:10px}
+  .tb-title{display:none}
+  .tb-actions{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;gap:7px;margin:0 -12px 0 0;padding:2px 12px 2px 0}
+  .tb-actions::-webkit-scrollbar{height:0}
+  .btn{flex:0 0 auto;padding:8px 11px;font-size:11px}
+  .sheet-wrap{padding:14px 8px 60px}
+  .sheet{padding:24px 14px 26px;border-radius:3px}
+  .doc-brand .mk{font-size:14px;letter-spacing:.2em}
+  .doc-qt .big{font-size:22px}
+  .doc-type{margin-top:16px;gap:8px}
+  .doc-type h2{font-size:17px}
+  .doc-type .sub{font-size:12px}
+
+  .items-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.items{table-layout:fixed;width:100%}
+  thead th{font-size:8px;letter-spacing:.05em;padding:0 3px 6px}
+  th.c-sn{width:18px}
+  th.c-qty{width:28px}
+  th.c-rate{width:56px}
+  th.c-amt{width:64px}
+  th.c-del{width:16px}
+  tr.item-row td{padding:8px 3px}
+  .td-sn{font-size:9px;padding-top:9px!important}
+  .it-desc{font-size:11.5px;line-height:1.3}
+  .it-notes{font-size:9.5px;line-height:1.3}
+  .cell-in{font-size:10.5px;padding:2px}
+  .td-amt{font-size:10.5px;padding-top:9px!important}
+  .row-del{font-size:12px}
+  tr.sec-row td{padding:14px 3px 6px}
+  .sec-name{font-size:10px;letter-spacing:.1em}
+  .sub-lbl{font-size:9px;letter-spacing:.08em}
+  .sub-amt{font-size:11px}
+  tr.sec-gap td{height:14px}
+  .add-line{font-size:10px}
+  .tot-grand .tv{font-size:20px}
+  .tot-row .tl,.tot-row .tv{font-size:11.5px}
+  .terms li{font-size:11px}
+  .brief-help{font-size:13.5px}
+  .brief-ta{min-height:130px;font-size:14px}
+}
+
+/* touch devices: reveal controls that normally show on hover */
+@media (hover:none){
+  .row-del,.sec-del,.term-del,.opt-del{opacity:1}
 }
 
 /* ============================================================
@@ -442,9 +530,9 @@ tr.sec-gap td{height:22px;border:none;background:transparent;padding:0}
 @media print{
   @page{size:A4;margin:14mm 13mm}
   body{background:#fff}
-  .toolbar,.rate-note,.modal-back,.toast,.row-del,.sec-del,.term-del,.opt-del,.tot-add,
+  .toolbar,.rate-note,.modal-back,.toast,.row-del,.sec-del,.term-del,.opt-del,.tot-add,.budget-chip,.brief-block.empty,
   .add-line,.add-section,.add-term,.add-row,.tb-actions{display:none!important}
-  #selector{display:none!important}
+  #selector,#brief{display:none!important}
   .sheet-wrap{padding:0;display:block}
   .sheet{box-shadow:none;border-radius:0;max-width:none;width:100%;padding:0}
   .filmstrip{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -485,6 +573,26 @@ tr.sec-gap td{height:22px;border:none;background:transparent;padding:0}
 </section>
 
 <!-- ============================================================
+     VIEW 1.5 — PROJECT BRIEF (optional)
+     ============================================================ -->
+<section id="brief" class="view">
+  <div class="brief-screen">
+    <button class="tb-back" id="briefBack"><span class="ar">←</span> Types</button>
+    <div class="brief-body-wrap">
+      <div class="eyebrow kick">New Quotation</div>
+      <h1 id="briefCat">—</h1>
+      <p class="brief-help">Add a short brief if you like — scope, references, timeline. It's optional; skip it and you'll go straight to the quotation.
+      <br><span class="hint"><b>Tip —</b> write a budget however you like — <em>“1.5L to 3L”</em>, <em>“make the budget 3L”</em>, <em>“Nrs 4,00,000–6,00,000”</em> — and the quote auto-fits to it.</span></p>
+      <textarea id="briefInput" class="brief-ta" placeholder="e.g. 3-song acoustic session for an indie artist. One-day shoot in Kathmandu, moody monochrome look. Budget Nrs. 400000-600000."></textarea>
+      <div class="brief-actions">
+        <button class="btn btn-ghost" id="briefSkip">Skip</button>
+        <button class="btn btn-primary" id="briefGo">Create quotation →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      VIEW 2 — BUILDER
      ============================================================ -->
 <section id="builder" class="view">
@@ -499,13 +607,11 @@ tr.sec-gap td{height:22px;border:none;background:transparent;padding:0}
       <div class="tb-actions">
         <button class="btn btn-ghost" id="saveRatesBtn" title="Save the current descriptions, units & rates as this type's default template">⤓ Save as default rates</button>
         <button class="btn btn-ghost" id="resetBtn" title="Reload this type from your saved defaults">↻ Reset</button>
+        <button class="btn btn-ghost" id="fitBtn" title="Re-fit line rates to the budget range mentioned in the brief">◎ Fit to budget</button>
         <button class="btn" id="exportBtn">⧉ Export</button>
         <button class="btn" id="importBtn">⤒ Import</button>
         <button class="btn btn-primary" id="printBtn">⎙ Print / PDF</button>
       </div>
-    </div>
-    <div class="rate-note">
-      <span><b>Tip</b> — click any field to edit. Rates you save become the new default for future quotes. Print exports to PDF via your browser.</span>
     </div>
   </div>
 
@@ -732,13 +838,17 @@ const UNITS = ["lump sum","days","hours","rounds","per reel","per asset","per sh
    ============================================================ */
 const mem = {};
 const HAS_STORE = (typeof window !== "undefined" && window.storage && typeof window.storage.get === "function");
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 async function sGet(key){
+  // In the Claude preview, use window.storage only. Self-hosted, use the browser's localStorage.
   if(HAS_STORE){ try{ const r = await window.storage.get(key); return r ? r.value : null; }catch(e){ return null; } }
+  const ls = lsGet(key); if(ls!==null) return ls;
   return key in mem ? mem[key] : null;
 }
 async function sSet(key,val){
-  if(HAS_STORE){ try{ await window.storage.set(key,val); }catch(e){} }
-  mem[key] = val;
+  if(HAS_STORE){ try{ await window.storage.set(key,val); }catch(e){} return; }
+  lsSet(key,val); mem[key] = val;
 }
 
 /* ============================================================
@@ -761,6 +871,7 @@ function newQuote(typeKey){
     title:tpl.title,
     sub:tpl.sub,
     client:"", project:"", contact:"",
+    brief:"", budgetLow:null, budgetHigh:null,
     qno:"", // filled after counter read
     date:fmtDate(today),
     valid:fmtDate(valid),
@@ -783,6 +894,9 @@ function fmtMoney(n){
 }
 function fmtDate(d){
   return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function budgetLabel(low,high){
+  return low===high ? `NPR ${fmtMoney(low)}` : `NPR ${fmtMoney(low)} – ${fmtMoney(high)}`;
 }
 function esc(s){return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function num(v){const n=parseFloat(v);return isNaN(n)?0:n;}
@@ -809,30 +923,186 @@ function renderSelector(){
     </button>`;
   }).join('');
   list.querySelectorAll('.type-row').forEach(b=>{
-    b.addEventListener('click',()=>openType(b.dataset.type));
+    b.addEventListener('click',()=>chooseType(b.dataset.type));
   });
 }
 
 /* ============================================================
-   OPEN A TYPE → BUILDER
+   SELECT TYPE → BRIEF → BUILDER
    ============================================================ */
-async function openType(typeKey){
-  currentType = typeKey;
-  current = newQuote(typeKey);
+let pendingType = null;
+
+function chooseType(typeKey){
+  pendingType = typeKey;
+  el('briefCat').textContent = ratecard[typeKey].label;
+  el('briefInput').value = "";
+  el('brief').classList.add('active');   // reveal the brief below the picker
+  requestAnimationFrame(()=>{ el('brief').scrollIntoView({behavior:'smooth',block:'start'}); });
+}
+
+function gotoSelector(){
+  el('brief').classList.remove('active');
+  el('builder').classList.remove('active');
+  el('selector').classList.add('active');
+  renderSelector(); refreshSavedFlag();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function gotoBuilder(){
+  // keep the picker/brief mounted above so this reads as a scroll DOWN to the quotation
+  el('builder').classList.add('active');
+  requestAnimationFrame(()=>{ el('builder').scrollIntoView({behavior:'smooth',block:'start'}); });
+}
+
+async function startQuote(briefText){
+  currentType = pendingType;
+  current = newQuote(currentType);
   // quote number from counter
   let c = parseInt(await sGet('quoteCounter')||'0',10);
   c += 1; await sSet('quoteCounter',String(c));
   const yr = new Date().getFullYear();
   current.qno = `KP-QTN-${yr}-${String(c).padStart(3,'0')}`;
-  el('tbType').textContent = ratecard[typeKey].label;
+  current.brief = (briefText||"").trim();
+
+  const msgs=[];
+  // 1) add / remove lines the brief asks for
+  if(current.brief){
+    const ed=applyEdits(current, parseEdits(current.brief));
+    if(ed.removed) msgs.push(`removed ${ed.removed} line${ed.removed>1?'s':''}`);
+    if(ed.added)   msgs.push(`added ${ed.added} line${ed.added>1?'s':''}`);
+  }
+  // 2) fit to a budget mentioned in the brief
+  let b=null, fitted=false;
+  if(current.brief){
+    b = parseBudget(current.brief);
+    if(b){ current.budgetLow=b.low; current.budgetHigh=b.high; fitted=tuneToBudget(current); }
+  }
+  if(b) msgs.push(fitted?`fitted to ${budgetLabel(b.low,b.high)}`:`within ${budgetLabel(b.low,b.high)}`);
+
+  el('tbType').textContent = ratecard[currentType].label;
   renderSheet();
-  showView('builder');
-  window.scrollTo(0,0);
+  gotoBuilder();
+  if(msgs.length){ const s=msgs.join(' · '); toast(s.charAt(0).toUpperCase()+s.slice(1), true); }
 }
 
-function showView(v){
-  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-  el(v==='builder'?'builder':'selector').classList.add('active');
+/* --- budget parsing: find a money range OR a single amount in free text --- */
+function parseBudget(text){
+  if(!text) return null;
+  const t = String(text).toLowerCase();
+  const unitMul = u => {
+    if(!u) return 1; u=u.replace(/\./g,'');
+    if(/^(lakhs?|lacs?|lac|l)$/.test(u)) return 1e5;
+    if(/^(crores?|cr)$/.test(u)) return 1e7;
+    if(/^(k|thousand)$/.test(u)) return 1e3;
+    if(/^(m|million|mn)$/.test(u)) return 1e6;
+    return 1;
+  };
+  const numRe   = '(\\d[\\d.,]*)';
+  const unitRe  = '(?:\\s*(lakhs?|lacs?|lac|l|crores?|cr|k|thousand|million|mn|m)(?![a-z]))?';
+  const sep     = '(?:\\s*[-–—~]\\s*|\\s+to\\s+)';
+  const clean   = s => parseFloat(String(s).replace(/,/g,'').replace(/\.+$/,''));
+  const moneyWord  = /(nrs|rs\.?|npr|rupees?|budget|₹|price|cost|around|approx)/;
+  const strongUnit = u => /^(lakhs?|lacs?|lac|l|crores?|cr)$/.test(u||'');
+  let m;
+
+  // 1) a range: "1.5L to 3L", "500000-800000", "4 to 6 lakh"
+  const reR = new RegExp(numRe+unitRe+sep+numRe+unitRe,'gi');
+  while((m=reR.exec(t))){
+    let n1=clean(m[1]), u1=m[2], n2=clean(m[3]), u2=m[4];
+    if(isNaN(n1)||isNaN(n2)) continue;
+    let low=n1*unitMul(u1||u2), high=n2*unitMul(u2||u1);
+    const ctx=t.slice(Math.max(0,m.index-18), m.index+m[0].length+10);
+    if(!(moneyWord.test(ctx) || u1 || u2 || low>=10000 || high>=10000)) continue;
+    if(low>high){ const tmp=low; low=high; high=tmp; }
+    if(low<=0||high<=0) continue;
+    return {low:Math.round(low), high:Math.round(high)};
+  }
+
+  // 2) a single amount: "make the budget 3L", "6 lakh", "Nrs 600000"
+  const reS = new RegExp(numRe+unitRe,'gi');
+  while((m=reS.exec(t))){
+    let n=clean(m[1]), u=m[2];
+    if(isNaN(n)) continue;
+    let val=n*unitMul(u);
+    const ctx=t.slice(Math.max(0,m.index-14), m.index+m[0].length+4);
+    if(!(moneyWord.test(ctx) || strongUnit(u))) continue;  // need a money cue
+    if(val<1000 || val<=0) continue;
+    return {low:Math.round(val), high:Math.round(val)};
+  }
+  return null;
+}
+
+/* --- totals helpers (VAT on subtotal+contingency) --- */
+function subtotalOf(q){ let s=0; q.sections.forEach(sec=>sec.items.forEach(it=>s+=num(it.qty)*num(it.rate))); return s; }
+function grandOf(q){
+  const sub=subtotalOf(q);
+  const c=q.contEnabled?num(q.contingency)/100:0, v=q.vatEnabled?num(q.vat)/100:0;
+  const cont=sub*c; return sub+cont+(sub+cont)*v;
+}
+
+/* --- scale line rates so the grand total lands inside the range --- */
+function tuneToBudget(q){
+  if(q.budgetLow==null||q.budgetHigh==null) return false;
+  const sub=subtotalOf(q); if(sub<=0) return false;
+  const grand=grandOf(q), low=q.budgetLow, high=q.budgetHigh;
+  if(grand>=low && grand<=high) return false;       // already fits — leave as is
+  const target=(low+high)/2;
+  const c=q.contEnabled?num(q.contingency)/100:0, v=q.vatEnabled?num(q.vat)/100:0;
+  const factor=(target/((1+c)*(1+v)))/sub;
+  q.sections.forEach(sec=>sec.items.forEach(it=>{
+    const r=num(it.rate);
+    if(r>0) it.rate=Math.max(100,Math.round(r*factor/100)*100);  // keep tidy round hundreds
+  }));
+  return true;
+}
+
+/* --- add / remove line items requested in the brief --- */
+function parseEdits(text){
+  const removes=[], adds=[];
+  if(!text) return {removes,adds};
+  const t=String(text).replace(/\s+/g,' ');
+  const split=s=>s.split(/\s*(?:,|&|\band\b|\bplus\b)\s*/i).map(x=>x.trim().replace(/^(the|a|an) /i,'')).filter(x=>x.length>1);
+  let m;
+  const remRe=/\b(?:remove|exclude|drop|delete|omit|skip|cut|without|don'?t need|no need (?:for|of)?|leave out)\s+(?:the |a |an )?([a-z0-9][a-z0-9 ,&/-]*?)(?=[.;]|\bbut\b|\bbudget\b|\badd\b|\binclude\b|\bremove\b|\bexclude\b|\bdrop\b|\bskip\b|\bcut\b|\bdelete\b|\bomit\b|\bwithout\b|$)/gi;
+  while((m=remRe.exec(t))) split(m[1]).forEach(x=>removes.push(x));
+  const addRe=/\b(?:add|include|also (?:need|want|include|add)|with an? added?)\s+(?:the |a |an )?([a-z0-9][a-z0-9 ,&/-]*?)(?=[.;]|\bbut\b|\bbudget\b|\bremove\b|\bexclude\b|\bdrop\b|\bwithout\b|\bskip\b|\badd\b|\binclude\b|$)/gi;
+  while((m=addRe.exec(t))) split(m[1]).forEach(x=>adds.push(x));
+  return {removes,adds};
+}
+function tokenHit(desc, phrase){
+  const A=desc.split(/[^a-z0-9]+/).filter(w=>w.length>2);
+  const B=phrase.split(/[^a-z0-9]+/).filter(w=>w.length>2);
+  if(!A.length||!B.length) return false;
+  const setA=new Set(A);
+  const common=B.filter(w=>setA.has(w)).length;
+  return common>0 && common/B.length>=0.6;
+}
+function applyEdits(quote, edits){
+  let removed=0, added=0;
+  edits.removes.forEach(phrase=>{
+    const p=phrase.toLowerCase().trim(); if(p.length<2) return;
+    quote.sections.forEach(sec=>{
+      const before=sec.items.length;
+      sec.items=sec.items.filter(it=>{
+        const d=(it.desc||'').toLowerCase();
+        if(!d) return true;
+        return !(d.includes(p) || p.includes(d) || tokenHit(d,p));
+      });
+      removed += before - sec.items.length;
+    });
+  });
+  quote.sections = quote.sections.filter(s=>s.items.length>0);
+  if(edits.adds.length){
+    let sec=quote.sections.find(s=>/(additional|add-?ons|extras?)/i.test(s.name));
+    if(!sec){ sec={name:"Additional", items:[]}; quote.sections.push(sec); }
+    edits.adds.forEach(phrase=>{
+      const name=phrase.replace(/\b\w/g,c=>c.toUpperCase()).trim();
+      if(name.length<2) return;
+      sec.items.push({desc:name, notes:"", qty:1, unit:"", rate:0});
+      added++;
+    });
+  }
+  return {removed, added};
 }
 
 /* ============================================================
@@ -851,9 +1121,9 @@ function renderSheet(){
           <div class="it-desc" contenteditable="true" data-f="desc" data-ph="Item description">${esc(it.desc)}</div>
           <div class="it-notes" contenteditable="true" data-f="notes" data-ph="Details / notes (optional)">${esc(it.notes)}</div>
         </td>
-        <td><input class="cell-in in-qty" data-f="qty" type="number" min="0" step="any" value="${it.qty}"></td>
+        <td class="td-qty"><input class="cell-in in-qty" data-f="qty" type="number" min="0" step="any" value="${it.qty}"></td>
         <td class="td-unit"><input class="cell-in in-unit" data-f="unit" list="unitList" value="${esc(it.unit)}"></td>
-        <td><input class="cell-in in-rate" data-f="rate" type="number" min="0" step="any" value="${it.rate}"></td>
+        <td class="td-rate"><input class="cell-in in-rate" data-f="rate" type="number" min="0" step="any" value="${it.rate}"></td>
         <td class="td-amt" data-amt="${si}-${ri}">${fmtMoney(amt)}</td>
         <td class="td-del"><button class="row-del" data-act="delRow" title="Remove line">✕</button></td>
       </tr>`;
@@ -911,14 +1181,14 @@ function renderSheet(){
       </div>
     </div>
 
-    <table class="items">
+    <div class="items-wrap"><table class="items">
       <thead><tr>
         <th class="c-sn">№</th><th>Item</th>
         <th class="c-qty">Qty</th><th class="c-unit">Unit</th>
         <th class="c-rate">Rate</th><th class="c-amt">Amount</th><th class="c-del"></th>
       </tr></thead>
       <tbody id="itemsBody">${sectionsHTML}</tbody>
-    </table>
+    </table></div>
 
     <button class="add-section" data-act="addSec">＋ Add section</button>
 
@@ -938,6 +1208,7 @@ function renderSheet(){
       </div>`:``}
       <div class="tot-grand"><span class="tl">Grand Total</span>
         <span><span class="cur">NPR</span><span class="tv tnum" id="tGrand"></span></span></div>
+      ${(q.budgetLow!=null)?`<div class="budget-chip">Target budget · <b>${budgetLabel(q.budgetLow,q.budgetHigh)}</b></div>`:''}
     </div></div>
 
     <div class="terms">
@@ -1001,6 +1272,10 @@ function bindSheet(){
       current[key] = node.tagName==='INPUT'?node.value:node.textContent;
     });
   });
+
+  // brief empty-state controls whether it prints
+  const bfield=sheet.querySelector('[data-meta="brief"]');
+  if(bfield) bfield.addEventListener('input',()=>{ const bl=el('briefBlock'); if(bl) bl.classList.toggle('empty', !bfield.textContent.trim()); });
 
   // item field edits
   sheet.querySelectorAll('.item-row').forEach(row=>{
@@ -1104,8 +1379,23 @@ el('modalBack').addEventListener('click',e=>{if(e.target===el('modalBack')){el('
 /* ============================================================
    TOOLBAR ACTIONS
    ============================================================ */
-el('backBtn').addEventListener('click',()=>{ showView('selector'); renderSelector(); refreshSavedFlag(); });
+el('backBtn').addEventListener('click',()=>{ gotoSelector(); });
 el('printBtn').addEventListener('click',()=>window.print());
+
+/* brief screen */
+el('briefBack').addEventListener('click',()=>{ gotoSelector(); });
+el('briefGo').addEventListener('click',()=>startQuote(el('briefInput').value));
+el('briefSkip').addEventListener('click',()=>startQuote(""));
+
+/* fit-to-budget (re-reads the brief and rescales rates) */
+el('fitBtn').addEventListener('click',()=>{
+  const b=parseBudget(current.brief||"");
+  if(!b){ toast('Add a budget like “Nrs 500000-800000” in the brief'); return; }
+  current.budgetLow=b.low; current.budgetHigh=b.high;
+  const changed=tuneToBudget(current);
+  renderSheet();
+  toast(changed?`Fitted to ${budgetLabel(b.low,b.high)}`:`Already within ${budgetLabel(b.low,b.high)}`,true);
+});
 
 /* Save current line structure (desc/notes/unit/rate/qty + sections) as this type's defaults */
 el('saveRatesBtn').addEventListener('click',()=>{
@@ -1161,8 +1451,11 @@ el('importFile').addEventListener('change',e=>{
       current=data; currentType=data.type||currentType;
       if(current.contEnabled===undefined) current.contEnabled=true;
       if(current.vatEnabled===undefined)  current.vatEnabled=true;
+      if(current.brief===undefined) current.brief="";
+      if(current.budgetLow===undefined) current.budgetLow=null;
+      if(current.budgetHigh===undefined) current.budgetHigh=null;
       el('tbType').textContent=(ratecard[currentType]?ratecard[currentType].label:'Imported');
-      renderSheet(); showView('builder'); toast("Quotation imported",true);
+      renderSheet(); gotoBuilder(); toast("Quotation imported",true);
     }catch(err){ toast("Couldn't read that file"); }
     e.target.value='';
   };
@@ -1174,7 +1467,7 @@ el('importFile').addEventListener('change',e=>{
    ============================================================ */
 async function refreshSavedFlag(){
   const saved = await sGet('ratecard');
-  el('savedFlag').textContent = saved ? "✓ Using your saved rate card" : (HAS_STORE?"Using built-in rates":"Using built-in rates · export to back up");
+  el('savedFlag').textContent = saved ? "✓ Using your saved rate card" : (HAS_STORE?"Using built-in rates":"Using built-in rates · saved on this device");
 }
 
 async function init(){
